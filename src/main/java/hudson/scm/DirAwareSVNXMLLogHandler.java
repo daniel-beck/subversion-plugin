@@ -108,8 +108,16 @@ public class DirAwareSVNXMLLogHandler extends SVNXMLLogHandler implements ISVNLo
             String key = paths.next();
             SVNLogEntryPath path = (SVNLogEntryPath) logEntry.getChangedPaths().get(key);
             addAttribute(ACTION_ATTR, path.getType() + "");
-            String relativeWorkspacePath = context.moduleWorkspacePath + path.getPath().substring(context.url.length() - context.repoUrl.length());
-            addAttribute(REL_PATH_ATTR, relativeWorkspacePath);
+
+            // the path within the repo to the location checked out
+            String modulePath = context.url.substring(context.repoUrl.length());
+
+            if (path.getPath().startsWith(modulePath)) {
+                // this path is inside the locally checked out module location, so set relativePath attribute
+                String relativeWorkspacePath = context.moduleWorkspacePath + path.getPath().substring(context.url.length() - context.repoUrl.length());
+                addAttribute(REL_PATH_ATTR, relativeWorkspacePath);
+            }
+
             if (path.getCopyPath() != null) {
                 addAttribute(COPYFROM_PATH_ATTR, path.getCopyPath());
                 addAttribute(COPYFROM_REV_ATTR, path.getCopyRevision() + "");
